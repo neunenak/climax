@@ -1,0 +1,10 @@
+name = "climax"
+version = "0.1.0"
+defaultTargets = ["climax"]
+
+[[lean_lib]]
+name = "Climax"
+
+[[lean_exe]]
+name = "climax"
+root = "Main"

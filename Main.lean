@@ -1,4 +1,5 @@
 import Climax
 
 def main : IO Unit :=
-  IO.println s!"Hello, {hello}!"
+
+  IO.println s!"This program demonstrates a simple use of the climax command line argument parsing library"

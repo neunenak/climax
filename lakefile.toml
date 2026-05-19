@@ -6,5 +6,5 @@ defaultTargets = ["climax"]
 name = "Climax"
 
 [[lean_exe]]
-name = "climax"
+name = "climax-example"
 root = "Main"

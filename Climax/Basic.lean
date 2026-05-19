@@ -1,1 +1,5 @@
-def hello := "world"
+
+
+inductive Parser where
+
+

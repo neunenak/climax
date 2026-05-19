@@ -3,7 +3,12 @@ import Climax.Argument
 import Climax.Matches
 
 structure Parser where
-  programName: String
+  -- name of the program
+  programName: Option String
+
+  -- description
+  description: Option String
+
   arguments: List Argument
 
 
@@ -12,6 +17,7 @@ namespace Parser
 
 def new (name: String): Parser := {
   programName := name
+  description := none
   arguments := []
 }
 
@@ -27,9 +33,12 @@ def helpString (parser: Parser): String := Id.run do
 
   let mut s := ""
 
-  s := s.append parser.programName
-  s := s.append "\n"
-
+  match parser.programName, parser.description with
+    | some name, some desc => 
+      s := s ++ s!"{name} - {desc}\n"
+    | some name, none => s := s ++ name ++ "\n"
+    | none, some desc => s := s ++ desc ++ "\n"
+    | none, none => ()
 
   s := s.append "Options:\n"
 

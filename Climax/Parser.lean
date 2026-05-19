@@ -1,3 +1,4 @@
+import Colorized
 
 import Climax.Argument
 import Climax.Matches
@@ -40,7 +41,7 @@ def helpString (parser: Parser): String := Id.run do
     | none, some desc => s := s ++ desc ++ "\n"
     | none, none => ()
 
-  s := s.append "Options:\n"
+  s := s.append (open Colorized in Colorized.color Color.Cyan "Options:\n")
 
 
   for arg in parser.arguments do

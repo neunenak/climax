@@ -1,5 +1,15 @@
 {"version": "1.1.0",
  "packagesDir": ".lake/packages",
- "packages": [],
+ "packages":
+ [{"url": "https://github.com/algebraic-dev/colorized",
+   "type": "git",
+   "subDir": null,
+   "scope": "algebraic-dev",
+   "rev": "e631ffd114535e1ace876e1b7062d672f718454f",
+   "name": "colorized",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "main",
+   "inherited": false,
+   "configFile": "lakefile.lean"}],
  "name": "climax",
  "lakeDir": ".lake"}

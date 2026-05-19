@@ -3,5 +3,5 @@ _default:
 
 
 # Execute the climax-example binary
-exec:
-    lake exec climax-example
+exec *args:
+    lake exec climax-example {{args}}

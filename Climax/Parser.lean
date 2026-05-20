@@ -93,9 +93,9 @@ private def parseLoop
       parseLoop longMap shortMap (rest.drop nConsumed) (item :: acc)
     else
       throw (.unknownArgument s)
-  /- termination_by remaining.length -/
-  /- decreasing_by -/
-  /-   all_goals simp +arith [List.length_cons, List.length_drop] -/
+  termination_by remaining.length
+  decreasing_by
+    all_goals simp +arith [List.length_cons, List.length_drop]
 
 def getMatches (parser: Parser) (cliArgs: List String): Except ParseError Matches := do
   let longMap : Std.HashMap String Argument :=

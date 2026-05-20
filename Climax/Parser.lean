@@ -98,6 +98,7 @@ private def parseLoop
     all_goals simp +arith [List.length_cons, List.length_drop]
 
 def getMatches (parser: Parser) (cliArgs: List String): Except ParseError Matches := do
+
   let longMap : Std.HashMap String Argument :=
     parser.arguments.foldl (fun m a => m.insert a.name a) (Std.HashMap.emptyWithCapacity)
   let shortMap : Std.HashMap Char Argument :=
@@ -105,15 +106,26 @@ def getMatches (parser: Parser) (cliArgs: List String): Except ParseError Matche
       match a.shortName with
       | some c => m.insert c a
       | none   => m) (Std.HashMap.emptyWithCapacity)
-  let items ← parseLoop longMap shortMap cliArgs []
-  let wasSeen (name: String) := items.any fun item =>
+
+  let items: List MatchedItem ← parseLoop longMap shortMap cliArgs []
+
+  let wasSeen (name: String): Bool := items.any fun (item: MatchedItem) =>
     match item with
     | .flag f => f.name == name
     | .arg a  => a.name == name
-  for argDef in parser.arguments do
-    if argDef.required && !wasSeen argDef.name then
-      throw (.missingRequired argDef.name)
-  return { matchedItems := items }
+
+  let allItems ← parser.arguments.foldlM (fun (acc: List MatchedItem) (argDef: Argument) =>
+    if wasSeen argDef.name then pure acc
+    else match argDef.default with
+      | some vs =>
+          let item : MatchedItem :=
+            if argDef.numArguments == 0 then .flag { name := argDef.name }
+            else .arg { name := argDef.name, value := vs }
+          pure (acc ++ [item])
+      | none =>
+          if argDef.required then throw (.missingRequired argDef.name)
+          else pure acc) items
+  return { matchedItems := allItems }
 
 -- Run the argument parser, yielding a Matches object, or exiting with errors
 def run (parser: Parser) (cliArgs: List String): IO Matches := do

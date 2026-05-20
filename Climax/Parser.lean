@@ -1,4 +1,7 @@
+import Std.Data.HashMap
+
 import Colorized
+
 
 import Climax.Argument
 import Climax.Matches
@@ -51,10 +54,24 @@ def helpString (parser: Parser): String := Id.run do
   return s
 
 
+structure MatchData where
+  arguments: List String
 
-def getMatches (_parser: Parser) (_cliArgs: List String): Matches :=
-  {
-  matchedItems := []
+def getMatches (_parser: Parser) (cliArgs: List String): Matches := Id.run do
+  let mut seen: Std.HashMap String MatchData := Std.HashMap.emptyWithCapacity
+
+  for arg in cliArgs do
+    if arg.startsWith "--" then
+      let argName := (arg.drop 2).toString
+      let existingKey := seen.get? argName
+
+    else if arg.startsWith "-" then
+      ()
+    else
+      ()
+
+  return {
+    matchedItems := []
   }
 
 

@@ -2,21 +2,27 @@ import Std.Data.HashMap
 
 import Colorized
 
-
 import Climax.Argument
 import Climax.Matches
 import Climax.Util
 
+inductive ParseError where
+  | unknownArgument (given: String)
+  | missingRequired (name: String)
+  | tooFewValues (name: String) (expected: Nat) (got: Nat)
+
+def ParseError.message : ParseError → String
+  | .unknownArgument s => s!"unknown argument: {s}"
+  | .missingRequired name => s!"missing required argument: --{name}"
+  | .tooFewValues name expected got =>
+      s!"--{name} requires {expected} value(s) but got {got}"
+
+instance : ToString ParseError := ⟨ParseError.message⟩
+
 structure Parser where
-  -- name of the program
   programName: Option String
-
-  -- description
   description: Option String
-
   arguments: List Argument
-
-
 
 namespace Parser
 
@@ -26,63 +32,100 @@ def new (name: String): Parser := {
   arguments := []
 }
 
-def addArgument (parser: Parser) (arg: Argument): Parser := 
-  let newArguments := parser.arguments.concat arg
-  {
-    parser with arguments := newArguments
-  }
-
+def addArgument (parser: Parser) (arg: Argument): Parser :=
+  { parser with arguments := parser.arguments.concat arg }
 
 def helpString (parser: Parser): String := Id.run do
-
   let mut s := ""
-
   match parser.programName, parser.description with
-    | some name, some desc => 
-      s := s ++ s!"{name} - {desc}\n"
-    | some name, none => s := s ++ name ++ "\n"
-    | none, some desc => s := s ++ desc ++ "\n"
-    | none, none => ()
-
+    | some name, some desc => s := s ++ s!"{name} - {desc}\n"
+    | some name, none      => s := s ++ name ++ "\n"
+    | none, some desc      => s := s ++ desc ++ "\n"
+    | none, none           => ()
   s := s.append (open Colorized in Colorized.color Color.Cyan "Options:\n")
-
   for arg in parser.arguments do
-    let line := s!"{spaceTab}{arg.optionString}"
-    s := s.append line
-    s := s.append "\n"
-
+    s := s.append s!"{spaceTab}{arg.optionString}\n"
   return s
 
-
-structure MatchData where
-  arguments: List String
-
-def getMatches (_parser: Parser) (cliArgs: List String): Matches := Id.run do
-  let mut seen: Std.HashMap String MatchData := Std.HashMap.emptyWithCapacity
-
-  for arg in cliArgs do
-    if arg.startsWith "--" then
-      let argName := (arg.drop 2).toString
-      let existingKey := seen.get? argName
-
-    else if arg.startsWith "-" then
-      ()
+-- Given a known Argument definition and the remaining tokens after the flag,
+-- return the MatchedItem and the number of following tokens consumed as values.
+private def resolveArg (argDef: Argument) (rest: List String) :
+    Except ParseError (MatchedItem × Nat) :=
+  if argDef.numArguments == 0 then
+    pure (.flag { name := argDef.name }, 0)
+  else
+    let values := rest.take argDef.numArguments
+    if values.length < argDef.numArguments then
+      .error (.tooFewValues argDef.name argDef.numArguments values.length)
     else
-      ()
+      pure (.arg { name := argDef.name, value := values }, argDef.numArguments)
 
-  return {
-    matchedItems := []
-  }
+private def matchLong (longMap: Std.HashMap String Argument) (token: String) (rest: List String) :
+    Except ParseError (MatchedItem × Nat) :=
+  match longMap.get? (token.drop 2).toString with
+  | none        => .error (.unknownArgument token)
+  | some argDef => resolveArg argDef rest
 
+private def matchShort (shortMap: Std.HashMap Char Argument) (token: String) (rest: List String) :
+    Except ParseError (MatchedItem × Nat) :=
+  let shortPart := (token.drop 1).toString
+  if shortPart.length != 1 then
+    .error (.unknownArgument token)
+  else
+    match shortMap.get? shortPart.front with
+    | none        => .error (.unknownArgument token)
+    | some argDef => resolveArg argDef rest
 
+private def parseLoop
+    (longMap: Std.HashMap String Argument)
+    (shortMap: Std.HashMap Char Argument)
+    (remaining: List String)
+    (acc: List MatchedItem) :
+    Except ParseError (List MatchedItem) := do
+  match remaining with
+  | [] => return acc.reverse
+  | s :: rest =>
+    if s.startsWith "--" then
+      let (item, nConsumed) ← matchLong longMap s rest
+      parseLoop longMap shortMap (rest.drop nConsumed) (item :: acc)
+    else if s.startsWith "-" then
+      let (item, nConsumed) ← matchShort shortMap s rest
+      parseLoop longMap shortMap (rest.drop nConsumed) (item :: acc)
+    else
+      throw (.unknownArgument s)
+  /- termination_by remaining.length -/
+  /- decreasing_by -/
+  /-   all_goals simp +arith [List.length_cons, List.length_drop] -/
 
-def run (parser: Parser) (cliArgs: List String): IO Unit := do
+def getMatches (parser: Parser) (cliArgs: List String): Except ParseError Matches := do
+  let longMap : Std.HashMap String Argument :=
+    parser.arguments.foldl (fun m a => m.insert a.name a) (Std.HashMap.emptyWithCapacity)
+  let shortMap : Std.HashMap Char Argument :=
+    parser.arguments.foldl (fun m a =>
+      match a.shortName with
+      | some c => m.insert c a
+      | none   => m) (Std.HashMap.emptyWithCapacity)
+  let items ← parseLoop longMap shortMap cliArgs []
+  let wasSeen (name: String) := items.any fun item =>
+    match item with
+    | .flag f => f.name == name
+    | .arg a  => a.name == name
+  for argDef in parser.arguments do
+    if argDef.required && !wasSeen argDef.name then
+      throw (.missingRequired argDef.name)
+  return { matchedItems := items }
+
+-- Run the argument parser, yielding a Matches object, or exiting with errors
+def run (parser: Parser) (cliArgs: List String): IO Matches := do
   match cliArgs with
-  | [] => return
-  | "--help" :: _rest => do
+  | "--help" :: _rest =>
     IO.println <| helpString parser
     IO.Process.exit 0
-  | _otherwise => return ()
-
+  | _ =>
+    match getMatches parser cliArgs with
+    | Except.error e =>
+      IO.eprintln s!"Command line argument error: {e}. Pass `--help` for usage information."
+      IO.Process.exit 1
+    | Except.ok cliMatches => return cliMatches
 
 end Parser

@@ -9,13 +9,13 @@ import Climax.Util
 inductive ParseError where
   | unknownArgument (given: String)
   | missingRequired (name: String)
-  | tooFewValues (name: String) (expected: Nat) (got: Nat)
+  | tooFewValues (arg: Argument) (got: Nat)
 
 def ParseError.message : ParseError → String
   | .unknownArgument s => s!"unknown argument: {s}"
   | .missingRequired name => s!"missing required argument: --{name}"
-  | .tooFewValues name expected got =>
-      s!"--{name} requires {expected} value(s) but got {got}"
+  | .tooFewValues arg got =>
+      s!"--{arg.name} requires {arg.numArguments} value(s) but got {got}"
 
 instance : ToString ParseError := ⟨ParseError.message⟩
 
@@ -56,7 +56,7 @@ private def resolveArg (argDef: Argument) (rest: List String) :
   else
     let values := rest.take argDef.numArguments
     if values.length < argDef.numArguments then
-      .error (.tooFewValues argDef.name argDef.numArguments values.length)
+      .error (.tooFewValues argDef values.length)
     else
       pure (.arg { name := argDef.name, value := values }, argDef.numArguments)
 

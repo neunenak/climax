@@ -7,16 +7,18 @@ structure Argument where
   required: Bool
   numArguments: Nat
   default: Option (List String)
+  isFlag: Bool
 
 namespace Argument
 
-def newFlag (name: String) (description: String): Argument := {
+def flag (name: String) (description: String): Argument := {
   name := name
   shortName := none
   description := description
   required := false
   numArguments := 0
   default := none
+  isFlag := True
   }
 
 def optionString (self: Argument): String := Id.run do

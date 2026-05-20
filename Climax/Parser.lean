@@ -2,6 +2,7 @@ import Colorized
 
 import Climax.Argument
 import Climax.Matches
+import Climax.Util
 
 structure Parser where
   -- name of the program
@@ -30,7 +31,6 @@ def addArgument (parser: Parser) (arg: Argument): Parser :=
 
 
 def helpString (parser: Parser): String := Id.run do
-  let spaceTab: String := String.ofList (List.replicate 4 ' ')
 
   let mut s := ""
 
@@ -43,21 +43,8 @@ def helpString (parser: Parser): String := Id.run do
 
   s := s.append (open Colorized in Colorized.color Color.Cyan "Options:\n")
 
-
   for arg in parser.arguments do
-    let mut line := spaceTab
-
-    if let some shortName := arg.shortName then
-      line := line.append s!"-{shortName}, "
-    else
-      line := line.append spaceTab
-
-    line := line.append s!"--{arg.name}"
-    line := line.append spaceTab
-
-    line := line.append "  "
-    line := line.append arg.description
-
+    let line := s!"{spaceTab}{arg.optionString}"
     s := s.append line
     s := s.append "\n"
 

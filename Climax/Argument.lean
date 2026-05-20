@@ -1,3 +1,4 @@
+import Climax.Util
 
 structure Argument where
   name: String
@@ -16,5 +17,19 @@ def newFlag (name: String) (description: String): Argument := {
   numArguments := 0
   }
 
+def optionString (self: Argument): String := Id.run do
+  let mut line := ""
+  if let some shortName := self.shortName then
+    line := line.append s!"-{shortName}, "
+  else
+    line := line.append spaceTab
+
+  line := line.append s!"--{self.name}"
+  line := line.append spaceTab
+
+  line := line.append "  "
+  line := line.append self.description
+
+   return line 
 
 end Argument

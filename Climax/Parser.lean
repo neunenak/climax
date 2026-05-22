@@ -141,3 +141,22 @@ def run (parser: Parser) (cliArgs: List String): IO Matches := do
     | Except.ok cliMatches => return cliMatches
 
 end Parser
+
+declare_syntax_cat argEntry
+syntax "|" str str str : argEntry  -- | "-x" "--long-name" "description"
+syntax "|" str str     : argEntry  -- | "--long-name" "description"
+
+/-- Add several arguments to a parser in a compact block.
+
+    arguments myParser
+      | "-c" "--chutney" "Generate some chutney"
+      | "-b" "--bananas" "Go absolutely bananas"
+      | "--arch"         "Architecture" -/
+macro "arguments" parser:term entries:argEntry* : term => do
+  let init ← `($parser)
+  entries.foldlM (fun acc entry => do
+    let argTerm ← match entry with
+      | `(argEntry| | $short $long $desc) => `(argument $short $long $desc)
+      | `(argEntry| | $long $desc)        => `(argument $long $desc)
+      | _ => Lean.Macro.throwError "unexpected argument entry"
+    `(Parser.addArgument $acc $argTerm)) init

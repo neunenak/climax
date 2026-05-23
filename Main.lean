@@ -1,10 +1,11 @@
 import Climax
 
 def cliArgs: Parser :=
-  arguments (Parser.new "climax-example")
+  let argParser := Parser.new "climax-example"
+  arguments argParser
     | "-c" "--chutney" "Generate some chutney"
     | "-b" "--bananas" "Go absolutely bananas"
-    | "--arch"         "Architecture"
+    | "--arch" "Architecture"
 
 def main (args: List String): IO Unit := do
 

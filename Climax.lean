@@ -3,3 +3,4 @@
 import Climax.Parser
 import Climax.Matches
 import Climax.Argument
+import Climax.Macros

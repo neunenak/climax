@@ -9,5 +9,5 @@ inductive MatchedItem where
   | flag (f: MatchedFlag)
   | arg (arg: MatchedArgument)
 
-structure Matches where
+structure ArgMatches where
   matchedItems: List MatchedItem

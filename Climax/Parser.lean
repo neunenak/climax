@@ -97,7 +97,7 @@ private def parseLoop
   decreasing_by
     all_goals simp +arith [List.length_cons, List.length_drop]
 
-def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Matches := do
+def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError ArgMatches := do
 
   let longMap : Std.HashMap String Argument :=
     parser.arguments.foldl (fun m a => m.insert a.name a) (Std.HashMap.emptyWithCapacity)
@@ -127,8 +127,8 @@ def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Mat
           else pure acc) items
   return { matchedItems := allItems }
 
--- Run the argument parser, yielding a Matches object, or exiting with errors
-def run (parser: ArgParser) (cliArgs: List String): IO Matches := do
+-- Run the argument parser, yielding an ArgMatches object, or exiting with errors
+def run (parser: ArgParser) (cliArgs: List String): IO ArgMatches := do
   match cliArgs with
   | "--help" :: _rest =>
     IO.println <| helpString parser

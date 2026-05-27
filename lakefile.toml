@@ -1,6 +1,7 @@
 name = "climax"
 version = "0.1.0"
 defaultTargets = ["climax"]
+testDriver = "test"
 
 [[require]]
 name = "colorized"
@@ -12,3 +13,11 @@ name = "Climax"
 [[lean_exe]]
 name = "climax-example"
 root = "Main"
+
+[[require]]
+name = "LSpec"
+scope = "argumentcomputer"
+
+[[lean_exe]]
+name = "test"
+root = "Test.Basic"

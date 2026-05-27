@@ -125,7 +125,7 @@ def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Arg
       | none =>
           if argDef.required then throw (.missingRequired argDef.name)
           else pure acc) items
-  return { matchedItems := allItems }
+  return { items := allItems }
 
 -- Run the argument parser, yielding an ArgMatches object, or exiting with errors
 def run (parser: ArgParser) (cliArgs: List String): IO ArgMatches := do

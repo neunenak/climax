@@ -19,23 +19,23 @@ def ParseError.message : ParseError → String
 
 instance : ToString ParseError := ⟨ParseError.message⟩
 
-structure Parser where
+structure ArgParser where
   programName: Option String
   description: Option String
   arguments: List Argument
 
-namespace Parser
+namespace ArgParser
 
-def new (name: String): Parser := {
+def new (name: String): ArgParser := {
   programName := name
   description := none
   arguments := []
 }
 
-def addArgument (parser: Parser) (arg: Argument): Parser :=
+def addArgument (parser: ArgParser) (arg: Argument): ArgParser :=
   { parser with arguments := parser.arguments.concat arg }
 
-def helpString (parser: Parser): String := Id.run do
+def helpString (parser: ArgParser): String := Id.run do
   let mut s := ""
   match parser.programName, parser.description with
     | some name, some desc => s := s ++ s!"{name} - {desc}\n"
@@ -97,7 +97,7 @@ private def parseLoop
   decreasing_by
     all_goals simp +arith [List.length_cons, List.length_drop]
 
-def getMatches (parser: Parser) (cliArgs: List String): Except ParseError Matches := do
+def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Matches := do
 
   let longMap : Std.HashMap String Argument :=
     parser.arguments.foldl (fun m a => m.insert a.name a) (Std.HashMap.emptyWithCapacity)
@@ -128,7 +128,7 @@ def getMatches (parser: Parser) (cliArgs: List String): Except ParseError Matche
   return { matchedItems := allItems }
 
 -- Run the argument parser, yielding a Matches object, or exiting with errors
-def run (parser: Parser) (cliArgs: List String): IO Matches := do
+def run (parser: ArgParser) (cliArgs: List String): IO Matches := do
   match cliArgs with
   | "--help" :: _rest =>
     IO.println <| helpString parser
@@ -140,4 +140,4 @@ def run (parser: Parser) (cliArgs: List String): IO Matches := do
       IO.Process.exit 1
     | Except.ok cliMatches => return cliMatches
 
-end Parser
+end ArgParser

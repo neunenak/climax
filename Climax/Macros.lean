@@ -70,4 +70,4 @@ macro "arguments" parser:term entries:argEntry* : term => do
       | `(argEntry| | $short $long $desc) => `(argument $short $long $desc)
       | `(argEntry| | $long $desc)        => `(argument $long $desc)
       | _ => Lean.Macro.throwError "unexpected argument entry"
-    `(Parser.addArgument $acc $argTerm)) init
+    `(ArgParser.addArgument $acc $argTerm)) init

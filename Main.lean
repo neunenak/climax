@@ -1,7 +1,7 @@
 import Climax
 
-def cliArgs: Parser :=
-  let argParser := Parser.new "climax-example"
+def cliArgs: ArgParser :=
+  let argParser := ArgParser.new "climax-example"
   arguments argParser
     | "-c" "--chutney" "Generate some chutney"
     | "-b" "--bananas" "Go absolutely bananas"

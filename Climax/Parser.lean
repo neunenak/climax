@@ -49,22 +49,22 @@ def helpString (parser: ArgParser): String := Id.run do
 
 -- Given a known Argument definition and the remaining tokens after the flag,
 -- return the MatchedItem and the number of following tokens consumed as values.
-private def resolveArg (argDef: Argument) (rest: List String) :
+private def resolveArg (argDef: Argument) (shortName: Option Char) (rest: List String) :
     Except ParseError (MatchedItem × Nat) :=
   if argDef.numArguments == 0 then
-    pure (.flag { name := argDef.name }, 0)
+    pure (.flag { name := argDef.name, shortName := shortName }, 0)
   else
     let values := rest.take argDef.numArguments
     if values.length < argDef.numArguments then
       .error (.tooFewValues argDef values.length)
     else
-      pure (.arg { name := argDef.name, value := values }, argDef.numArguments)
+      pure (.arg { name := argDef.name, shortName := shortName, value := values }, argDef.numArguments)
 
 private def matchLong (longMap: Std.HashMap String Argument) (token: String) (rest: List String) :
     Except ParseError (MatchedItem × Nat) :=
   match longMap.get? (token.drop 2).toString with
   | none        => .error (.unknownArgument token)
-  | some argDef => resolveArg argDef rest
+  | some argDef => resolveArg argDef none rest
 
 private def matchShort (shortMap: Std.HashMap Char Argument) (token: String) (rest: List String) :
     Except ParseError (MatchedItem × Nat) :=
@@ -74,7 +74,7 @@ private def matchShort (shortMap: Std.HashMap Char Argument) (token: String) (re
   else
     match shortMap.get? shortPart.front with
     | none        => .error (.unknownArgument token)
-    | some argDef => resolveArg argDef rest
+    | some argDef => resolveArg argDef (some shortPart.front) rest
 
 private def parseLoop
     (longMap: Std.HashMap String Argument)

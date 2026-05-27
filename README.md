@@ -10,3 +10,7 @@ Python [click](https://click.palletsprojects.com/en/stable/) or Rust
 ```Lean
 
 ```
+
+## Quickstart
+
+`Main.Lean` contains a commented demo program illustrating the use of Climax.

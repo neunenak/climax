@@ -12,6 +12,7 @@ def basicParser := arguments (ArgParser.new "greet")
 def basicParserExpectedHelp :=
   "greet\n" ++
   (open Colorized in Colorized.color Color.Cyan "Options:\n") ++
+  "    -h, --help      Show this help message\n" ++
   "    -n, --name      Name to greet\n" ++
   "        --verbose      Enable verbose output\n"
 

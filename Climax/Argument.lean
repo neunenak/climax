@@ -2,6 +2,12 @@ import Lean
 
 import Climax.Util
 
+inductive Action where
+  | SetTrue
+  | SetFalse
+  | Set
+  | Append
+
 structure Argument where
   name: String
   shortName: Option Char
@@ -10,8 +16,10 @@ structure Argument where
   numArguments: Nat
   default: Option String
   isFlag: Bool
+  action: Action := Action.Set
 
 namespace Argument
+
 
 def flag (name: String) (description: String): Argument := {
   name := name

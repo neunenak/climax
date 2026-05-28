@@ -19,7 +19,19 @@ def basicParserExpectedHelp :=
 open LSpec
 
 def helpTests: List TestSeq := [
-  test "Help is as expected" (basicParser.helpString = basicParserExpectedHelp)
+  test "Help is as expected" (basicParser.helpString = basicParserExpectedHelp) $
+
+  let p := arguments (ArgParser.blank "test")
+    | "--zebra" "Z arg"
+    | "--alpha" "A arg"
+    | "--mango" "M arg"
+  let expected :=
+    "test\n" ++
+    (open Colorized in Colorized.color Color.Cyan "Options:\n") ++
+    "        --alpha      A arg\n" ++
+    "        --mango      M arg\n" ++
+    "        --zebra      Z arg\n"
+  test "Help sorts arguments alphabetically by long name" (p.helpString = expected)
 ]
 
 def basicMatchTests: List TestSeq :=
@@ -36,8 +48,6 @@ def basicMatchTests: List TestSeq :=
     (aM.getMatch? "n").isSome
       ))
   ]
-
-
 
 def main := lspecIO $ .ofList [
   ("Help tests", helpTests),

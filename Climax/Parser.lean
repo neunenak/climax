@@ -59,7 +59,7 @@ def helpString (parser: ArgParser): String := Id.run do
     | none, some desc      => s := s ++ desc ++ "\n"
     | none, none           => ()
   s := s.append (open Colorized in Colorized.color Color.Cyan "Options:\n")
-  for arg in parser.arguments do
+  for arg in parser.arguments.mergeSort (fun a b => decide (a.name < b.name)) do
     s := s.append s!"{spaceTab}{arg.optionString}\n"
   return s
 

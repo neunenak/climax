@@ -26,11 +26,28 @@ structure ArgParser where
 
 namespace ArgParser
 
-def new (name: String): ArgParser := {
+-- Creates a completely blank argument parser
+def blank (name: String): ArgParser := {
   programName := name
   description := none
   arguments := []
 }
+
+-- Creates a new argument parser with default options
+def new (name: String): ArgParser :=
+  let helpArg : Argument := {
+    name        := "help"
+    shortName   := some 'h'
+    description := "Show this help message"
+    required    := false
+    numArguments := 0
+    default     := none
+    action      := Action.ShowHelp
+  }
+  { programName := name
+    description := none
+    arguments   := [helpArg]
+  }
 
 def addArgument (parser: ArgParser) (arg: Argument): ArgParser :=
   { parser with arguments := parser.arguments.concat arg }
@@ -124,15 +141,14 @@ def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Arg
 
 -- Run the argument parser, yielding an ArgMatches object, or exiting with errors
 def run (parser: ArgParser) (cliArgs: List String): IO ArgMatches := do
-  match cliArgs with
-  | "--help" :: _rest =>
-    IO.println <| helpString parser
-    IO.Process.exit 0
-  | _ =>
-    match getMatches parser cliArgs with
-    | Except.error e =>
-      IO.eprintln s!"Command line argument error: {e}. Pass `--help` for usage information."
-      IO.Process.exit 1
-    | Except.ok cliMatches => return cliMatches
+  match getMatches parser cliArgs with
+  | Except.error e =>
+    IO.eprintln s!"Command line argument error: {e}. Pass `--help` for usage information."
+    IO.Process.exit 1
+  | Except.ok cliMatches =>
+    if cliMatches.showHelp then
+      IO.println <| helpString parser
+      IO.Process.exit 0
+    return cliMatches
 
 end ArgParser

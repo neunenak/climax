@@ -7,6 +7,7 @@ inductive Action where
   | SetFalse
   | Set
   | Append
+  | ShowHelp
 
 structure Argument where
   name: String

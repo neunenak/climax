@@ -32,7 +32,6 @@ private def mkArgumentTerm (shortCharOpt : Option Char) (longName descStr : Stri
       description  := $descLit
       required     := false
       numArguments := $numArgsTerm
-      default      := none
       action       := $actionTerm
       : Argument })
 

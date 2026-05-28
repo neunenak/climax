@@ -15,7 +15,7 @@ structure Argument where
   description: String
   required: Bool
   numArguments: Nat
-  default: Option String
+  default: Option String := none
   action: Action := Action.Set
 
 namespace Argument
@@ -27,7 +27,6 @@ def flag (name: String) (description: String): Argument := {
   description := description
   required := false
   numArguments := 0
-  default := none
   action := Action.SetTrue
   }
 

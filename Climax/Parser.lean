@@ -41,7 +41,6 @@ def new (name: String): ArgParser :=
     description := "Show this help message"
     required    := false
     numArguments := 0
-    default     := none
     action      := Action.ShowHelp
   }
   { programName := name

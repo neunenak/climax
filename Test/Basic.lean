@@ -1,6 +1,7 @@
 import LSpec
 
 import Climax
+import Test.Macros
 
 
 
@@ -35,7 +36,9 @@ def basicMatchTests: List TestSeq :=
       ))
   ]
 
+
+
 def main := lspecIO $ .ofList [
   ("Help tests", helpTests),
-  ("Basic match checks", basicMatchTests)
+  ("Basic match checks", basicMatchTests),
 ]

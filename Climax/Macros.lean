@@ -24,16 +24,16 @@ private def mkArgumentTerm (shortCharOpt : Option Char) (longName descStr : Stri
         let charLit := Lean.Syntax.mkCharLit c
         `(some $charLit)
   -- Arguments with a short form take one value; long-only arguments are boolean flags.
-  let (numArgsTerm, isFlagTerm) ← match shortCharOpt with
-    | some _ => do pure (← `(1), ← `(false))
-    | none   => do pure (← `(0), ← `(true))
+  let (numArgsTerm, actionTerm) ← match shortCharOpt with
+    | some _ => do pure (← `(1), ← `(Action.Set))
+    | none   => do pure (← `(0), ← `(Action.SetTrue))
   `({ name         := $nameLit
       shortName    := $shortNameTerm
       description  := $descLit
       required     := false
       numArguments := $numArgsTerm
       default      := none
-      isFlag       := $isFlagTerm
+      action       := $actionTerm
       : Argument })
 
 

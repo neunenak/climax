@@ -52,13 +52,13 @@ def helpString (parser: ArgParser): String := Id.run do
 private def resolveArg (argDef: Argument) (shortName: Option Char) (rest: List String) :
     Except ParseError (MatchedItem × Nat) :=
   if argDef.numArguments == 0 then
-    pure (.flag { name := argDef.name, shortName := shortName }, 0)
+    pure ({ name := argDef.name, shortName := shortName, action := argDef.action }, 0)
   else
     let values := rest.take argDef.numArguments
     if values.length < argDef.numArguments then
       .error (.tooFewValues argDef values.length)
     else
-      pure (.arg { name := argDef.name, shortName := shortName, value := values }, argDef.numArguments)
+      pure ({ name := argDef.name, shortName := shortName, value := values, action := argDef.action }, argDef.numArguments)
 
 private def matchLong (longMap: Std.HashMap String Argument) (token: String) (rest: List String) :
     Except ParseError (MatchedItem × Nat) :=
@@ -109,18 +109,13 @@ def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Arg
 
   let items: List MatchedItem ← parseLoop longMap shortMap cliArgs []
 
-  let wasSeen (name: String): Bool := items.any fun (item: MatchedItem) =>
-    match item with
-    | .flag f => f.name == name
-    | .arg a  => a.name == name
+  let wasSeen (name: String): Bool := items.any fun item => item.name == name
 
   let allItems ← parser.arguments.foldlM (fun (acc: List MatchedItem) (argDef: Argument) =>
     if wasSeen argDef.name then pure acc
     else match argDef.default with
       | some v =>
-          let item : MatchedItem :=
-            if argDef.numArguments == 0 then .flag { name := argDef.name }
-            else .arg { name := argDef.name, value := [v] }
+          let item : MatchedItem := { name := argDef.name, value := [v], action := argDef.action }
           pure (acc ++ [item])
       | none =>
           if argDef.required then throw (.missingRequired argDef.name)

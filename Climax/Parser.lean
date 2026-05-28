@@ -117,10 +117,10 @@ def getMatches (parser: ArgParser) (cliArgs: List String): Except ParseError Arg
   let allItems ← parser.arguments.foldlM (fun (acc: List MatchedItem) (argDef: Argument) =>
     if wasSeen argDef.name then pure acc
     else match argDef.default with
-      | some vs =>
+      | some v =>
           let item : MatchedItem :=
             if argDef.numArguments == 0 then .flag { name := argDef.name }
-            else .arg { name := argDef.name, value := vs }
+            else .arg { name := argDef.name, value := [v] }
           pure (acc ++ [item])
       | none =>
           if argDef.required then throw (.missingRequired argDef.name)

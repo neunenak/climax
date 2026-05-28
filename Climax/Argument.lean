@@ -8,7 +8,7 @@ structure Argument where
   description: String
   required: Bool
   numArguments: Nat
-  default: Option (List String)
+  default: Option String
   isFlag: Bool
 
 namespace Argument
